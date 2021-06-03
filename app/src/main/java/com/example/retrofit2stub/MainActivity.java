@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity {
 
         calories = textViewCalMin.getText().toString() + "-" + textViewCalMax.getText().toString();
 
-        Call<Response> call = api.search(item, key, id, diet, 0, 9, calories);  // создали запрос
+        Call<Response> call = api.search(item, key, id, diet, 0, 9, calories);  
 
         Callback<Response> callback = new Callback<Response>() {
             @Override
