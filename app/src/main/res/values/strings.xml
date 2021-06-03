@@ -1,9 +1,11 @@
 <resources>
     <string name="app_name">Retrofit2Stub</string>
     <string-array name="type">
-        <item>all</item>
-        <item>photo</item>
-        <item>illustration</item>
-        <item>vector</item>
+        <item>balanced</item>
+        <item>high-protein</item>
+        <item>high-fiber</item>
+        <item>low-fat</item>
+        <item>low-carb</item>
+        <item>low-sodium</item>
     </string-array>
 </resources>

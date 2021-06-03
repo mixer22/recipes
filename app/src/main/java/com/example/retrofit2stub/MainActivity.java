@@ -27,20 +27,23 @@ import retrofit2.http.Url;
 
 public class MainActivity extends AppCompatActivity {
 
-    String API_URL = "https://pixabay.com/";
-    String key = "21225042-eaf922ecbdf2c29c058db6333";
-    String image_type = "all";
+    String API_URL = "https://api.edamam.com/";
+    String key = "a529ba1725b949bc5ca23426cc8a093c";
+    String id = "ceabcb28";
+    String diet = "balanced";
+    String calories = "0 - 10000";
     TextView textViewSearch;
+    TextView textViewCalMin;
+    TextView textViewCalMax;
     ListView listView;
     ImageListAdapter imageAdapter;
     Spinner spinner;
 
 
     interface PixabayAPI {
-        @GET("/api") // метод запроса (POST/GET) и путь к API
-        // пример содержимого веб-формы q=dogs+and+people&key=MYKEY&image_type=photo
-        Call<Response> search(@Query("q") String q, @Query("key") String key, @Query("image_type") String image_type);
-        // Тип ответа, действие, содержание запроса
+        @GET("/search")
+        Call<Response> search(@Query("q") String item, @Query("app_key") String key, @Query("app_id") String id, @Query("diet") String diet,
+                              @Query("from") int start, @Query("to") int end, @Query("calories") String calories);
 
     }
     @Override
@@ -49,6 +52,8 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         textViewSearch = findViewById(R.id.textSearch);
         listView = findViewById(R.id.listView);
+        textViewCalMin = findViewById(R.id.textCalMin);
+        textViewCalMax = findViewById(R.id.textCalMax);
         spinner = findViewById(R.id.spinner);
 
         ArrayAdapter<?> adapter =
@@ -56,58 +61,37 @@ public class MainActivity extends AppCompatActivity {
         adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         spinner.setAdapter(adapter);
         spinner.setSelection(0);
-
-        spinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                image_type = spinner.getSelectedItem().toString();
-                startSearch(textViewSearch.getText().toString());
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-
-            }
-        });
     }
 
-    public void startSearch(String text) {
-        // вызывается, когда пользователь вводит текст и нажимает кнопку поиска
-
-        // создаём экземпляр службы для обращения к API
-        // можно использовать экземпляр для нескольких API сразу
+    public void startSearch(String item) {
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(API_URL) // адрес API сервера
+                .baseUrl(API_URL)
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-        // создаём обработчик, определённый интерфейсом PixabayAPI выше
         PixabayAPI api = retrofit.create(PixabayAPI.class);
 
-        // указываем, какую функцию API будем использовать
+        calories = textViewCalMin.getText().toString() + "-" + textViewCalMax.getText().toString();
 
-        Call<Response> call = api.search(text, key, image_type);  // создали запрос
+        Call<Response> call = api.search(item, key, id, diet, 0, 9, calories);  // создали запрос
 
         Callback<Response> callback = new Callback<Response>() {
             @Override
             public void onResponse(Call<Response> call, retrofit2.Response<Response> response) {
 
-                // класс Response содердит поля, в которые будут записаны
-                // результаты поиска по картинкам
-                Response r = response.body(); // получили ответ в виде объекта
+                Response r = response.body();
                 displayResults(r.hits);
-                Toast toast = Toast.makeText(getApplicationContext(), "Найдено: " + r.hits.length + " картинок", Toast.LENGTH_SHORT);
+                Toast toast = Toast.makeText(getApplicationContext(), "Найдено: " + r.count + " рецептов", Toast.LENGTH_SHORT);
                 toast.show();
             }
 
             @Override
             public void onFailure(Call<Response> call, Throwable t) {
-                // обрабатываем ошибку, если она возникла
                 Toast toast = Toast.makeText(getApplicationContext(), "Ошибка: " + t.getLocalizedMessage(), Toast.LENGTH_SHORT);
                 toast.show();
             }
-        }; // обработка ответа
-        call.enqueue(callback); // ставим запрос в очередь
+        };
+        call.enqueue(callback);
     }
 
     public void displayResults(Hit[] hits) {
@@ -116,7 +100,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void onSearchClick(View v) {
-        image_type = spinner.getSelectedItem().toString();
+        diet = spinner.getSelectedItem().toString();
         startSearch(textViewSearch.getText().toString());
     }
 }
